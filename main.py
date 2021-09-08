@@ -1,35 +1,29 @@
 import pygame
 from game import Game
 
+#задаємо розширення екрану в залежності від розмірів ігроового поля
 SCREEN_WIDTH = 672
 SCREEN_HEIGHT = 640
 
 def main():
-    # Initialize all imported pygame modules
+    # ініціація всього процесу запуску гри
     pygame.init()
-    # Set the width and height of the screen [width, height]
     screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
-    # Set the current window caption
     pygame.display.set_caption("PACMAN")
-    #Loop until the user clicks the close button.
+    #запуск нескінченного процесу, доки користувач не закриє вікно гри
     done = False
-    # Used to manage how fast the screen updates
     clock = pygame.time.Clock()
-    # Create a game object
+    #створення ігрового об'єкту
     game = Game()
-    # -------- Main Program Loop -----------
     while not done:
-        # --- Process events (keystrokes, mouse clicks, etc)
+        #доки гравець не вийде з гри, відбувається зчитування його дій (натискання на клавіші тощо)
         done = game.process_events()
-        # --- Game logic should go here
+        #запуск роботи гри, її логічного процесу
         game.run_logic()
-        # --- Draw the current frame
+        #створення графіки та самого екрану гри
         game.display_frame(screen)
-        # --- Limit to 30 frames per second
         clock.tick(30)
-    # Close the window and quit.
-    # If you forget this line, the program will 'hang'
-    # on exit if running from IDLE.
+    #після завершення гравцем гри, відбувається вихід з неї
     pygame.quit()
 
 if __name__ == '__main__':
