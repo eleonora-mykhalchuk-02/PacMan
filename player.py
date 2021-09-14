@@ -1,5 +1,6 @@
 import pygame
 from enemies import *
+import random
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
 SCREEN_WIDTH = 672

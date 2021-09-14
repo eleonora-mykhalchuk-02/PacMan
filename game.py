@@ -3,6 +3,7 @@ import pygame
 from pygame.constants import GL_GREEN_SIZE
 from player import Player
 from enemies import *
+from pathfinding import *
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
 SCREEN_WIDTH = 672
@@ -14,6 +15,9 @@ WHITE = (255,255,255)
 BLUE = (0,0,255)
 RED = (255,0,0)
 
+startI = 9
+startJ = 0
+
 #клас самої гри
 class Game(object):
     def __init__(self):
@@ -24,7 +28,7 @@ class Game(object):
         #створення змінної для визначення рахунку гравця
         self.score = 0
         #створення гравця
-        self.player = Player(0,288,"player.png")
+        self.player = Player(startJ*32,startI*32,"player.png")
         #стоворення блоків (шляхів), якими пересуватиметься гравець
         self.horizontal_blocks = pygame.sprite.Group()
         self.vertical_blocks = pygame.sprite.Group()
@@ -32,6 +36,7 @@ class Game(object):
         self.dots_group = pygame.sprite.Group()
         #створення допоміжних блоків, що зображатимуть стіни та не даватимуть гравцю їх перетинати
         self.blocks_group = pygame.sprite.Group()
+        self.path_group = pygame.sprite.Group()
         #перетворення колекції поля для проходження по ній надалі
         gridforblocks = enumerate(grid)
 
@@ -55,11 +60,19 @@ class Game(object):
         self.enemies.add(Slime(384,288,2,0))
 
         #створення та додавання "їжі" на поле (всюди, де немає стін)
+        listOfXY = []
         for i, row in enumerate(grid):
             for j, item in enumerate(row):
                 if item != 0:
-                    self.dots_group.add(Ellipse(j*32+12,i*32+12,WHITE,8,8))
-        
+                    coordinates = [i, j]
+                    listOfXY.append(coordinates)
+        #           self.dots_group.add(Ellipse(j*32+12,i*32+12,WHITE,8,8))
+        foodPosition = random.randint(0, len(listOfXY)-1)
+        endI = listOfXY[foodPosition][0] 
+        endJ = listOfXY[foodPosition][1] 
+        self.dots_group.add(Ellipse(endJ* 32 + 5, endI* 32 + 5, WHITE, 24, 24))
+        #self.path_group = bfs(startI, startJ, endI, endJ)
+        #self.path_group = pathForDfs(startI, startJ, endI, endJ)
         #відновлення гри одразу після завершеня її створення
         self.game_over = False
 
@@ -74,6 +87,7 @@ class Game(object):
             if event.type == pygame.KEYDOWN:
                 #при натисканні клавіші "Ентер" відбувається запуск нової гри
                 if event.key == pygame.K_RETURN:
+                    print(ucs())
                     self.__init__()
                 #при натисанні клавіші праворуч, ліворуч, вгору чи вниз відбувається рух гравця у відповідному напрямку
                 elif event.key == pygame.K_RIGHT:
@@ -110,15 +124,17 @@ class Game(object):
             block_hit_list = pygame.sprite.spritecollide(self.player,self.dots_group,True)
             if len(block_hit_list) > 0:
                 self.score += 1
-            #якщо рахунок буде рівний 231 - кількості всіх крапок на полі, то гру завершено
-            if self.score == 231:
+                print(len(self.dots_group))
+            #якщо на полі не залишилось їжі, то гру завершено
+            if len(self.dots_group) == 0:
                 self.player.explosion = True
             #якщо гравцеь стикаєтьсяз ворогом, відбувається вибух гравця та завершення гри, зміна статусу гри на "завершено"
             block_hit_list = pygame.sprite.spritecollide(self.player,self.enemies,True)
             if len(block_hit_list) > 0:
                 self.player.explosion = True 
             self.game_over = self.player.game_over
-            
+    
+
     def display_frame(self,screen):
         #метод створення екрану гри, зображення поля, необхідних спрайтів, груп, текстів  тощо
         screen.fill(BLACK)
@@ -127,6 +143,7 @@ class Game(object):
         draw_enviroment(screen)
         self.dots_group.draw(screen)
         self.enemies.draw(screen)
+        #drawPath(self.path_group, screen)
         screen.blit(self.player.image,self.player.rect)
         text = self.font.render("Score: " + str(self.score),True,GREEN)
         messagePart1 = self.font.render("Tap ENTER", True, GREEN)
