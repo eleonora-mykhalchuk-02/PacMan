@@ -2,13 +2,13 @@ import pygame
 from game import Game
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
-SCREEN_WIDTH = 672
-SCREEN_HEIGHT = 640
+SCREENWIDTH = 672
+SCREENHEIGHT = 640
 
 def main():
     # ініціація всього процесу запуску гри
     pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((SCREENWIDTH,SCREENHEIGHT))
     pygame.display.set_caption("PACMAN")
     #запуск нескінченного процесу, доки користувач не закриє вікно гри
     done = False
@@ -17,11 +17,11 @@ def main():
     game = Game()
     while not done:
         #доки гравець не вийде з гри, відбувається зчитування його дій (натискання на клавіші тощо)
-        done = game.process_events()
+        done = game.processEvents()
         #запуск роботи гри, її логічного процесу
-        game.run_logic()
+        game.runLogic()
         #створення графіки та самого екрану гри
-        game.display_frame(screen)
+        game.displayFrame(screen)
         clock.tick(30)
     #після завершення гравцем гри, відбувається вихід з неї
     pygame.quit()

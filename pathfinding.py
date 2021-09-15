@@ -2,9 +2,10 @@ from enemies import *
 from game import*
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
-SCREEN_WIDTH = 672
-SCREEN_HEIGHT = 640
+SCREENWIDTH = 672
+SCREENHEIGHT = 640
 
+#створення допоміжного поля для алгоритму BFS
 def newGrid():
     addGrid = []
     for i in range(len(grid)):
@@ -14,7 +15,7 @@ def newGrid():
         addGrid.append(row)
     return addGrid
 
-
+#метод реалізації "кроку" для пошуку в ширину
 def stepBfs(k, addGrid):
     for i in range(len(addGrid)):
         for j in range(len(addGrid[i])):
@@ -28,6 +29,7 @@ def stepBfs(k, addGrid):
                 if j<len(addGrid[i])-1 and addGrid[i][j+1] == 0 and grid[i][j+1] == 1:
                     addGrid[i][j+1] = k + 1
 
+#метод реалізації покрокового проходження поля для пошуку в ширину
 def findPathBfs(addGrid, i, j):
     k = addGrid[i][j]
     path = [(i, j)]
@@ -50,6 +52,7 @@ def findPathBfs(addGrid, i, j):
             k -= 1
     return path
 
+#метод реалізації пошуку в ширину
 def bfs(startI, startJ, endI, endJ):
     addGrid = newGrid()
     addGrid[startI][startJ] = 1
@@ -60,8 +63,9 @@ def bfs(startI, startJ, endI, endJ):
     path = findPathBfs(addGrid, endI, endJ)
     return path
 
+#створення списку для точок шляху
 pathDfs = []
-
+#метод реалізації пошуку шляху в глибину
 def pathForDfs(startI, startJ, endI, endJ):
     gridForDfs = []
     for rows in grid:
@@ -73,6 +77,7 @@ def pathForDfs(startI, startJ, endI, endJ):
     dfs(startI, startJ, endI, endJ, pathes, gridForDfs)
     return pathes[0]
 
+#метод реалізації роботи алгоритму пошуку в глибину
 def dfs(startI, startJ, endI, endJ, pathes, gridForDfs):
     if startI < 0 or startJ < 0 or startI > len(gridForDfs)-1 or startJ > len(gridForDfs[0])-1:
         return
@@ -92,20 +97,21 @@ def dfs(startI, startJ, endI, endJ, pathes, gridForDfs):
     pathDfs.pop()
     return 
 
-def ucs():
-    gridForUcs = []
-    for i in range(0, len(grid)*2 - 1):
-        row = []
-        for j in range(0, len(grid[0])*2 - 1):
-            if (i % 2 == 0) and (j % 2 == 0):
-                row.append(grid[int(i/2)][int(j/2)])
-            elif(i % 2 != 0) and (j % 2 != 0):
-                row.append(0)
-            else:
-                row.append(random.randint(2,9))
-        gridForUcs.append(row)
-    gridForUcs
+# def ucs():
+#     gridForUcs = []
+#     for i in range(0, len(grid)*2 - 1):
+#         row = []
+#         for j in range(0, len(grid[0])*2 - 1):
+#             if (i % 2 == 0) and (j % 2 == 0):
+#                 row.append(grid[int(i/2)][int(j/2)])
+#             elif(i % 2 != 0) and (j % 2 != 0):
+#                 row.append(0)
+#             else:
+#                 row.append(random.randint(2,9))
+#         gridForUcs.append(row)
+#     gridForUcs
 
+#метод для зображення шляху на полі
 def drawPath(path, screen):
         for point in path:
             pygame.draw.rect(screen, RED, pygame.Rect(point[1]*32 + 9, point[0]*32 + 9, 16, 16))

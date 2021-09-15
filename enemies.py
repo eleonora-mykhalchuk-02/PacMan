@@ -2,8 +2,8 @@ import pygame
 import random
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
-SCREEN_WIDTH = 672
-SCREEN_HEIGHT = 640
+SCREENWIDTH = 672
+SCREENHEIGHT = 640
 
 #визначення кольорів для подальшого використання
 BLACK = (0,0,0)
@@ -65,19 +65,19 @@ class Ellipse(pygame.sprite.Sprite):
 
 #клас привидів (ворогів пакмена)
 class Slime(pygame.sprite.Sprite):
-    def __init__(self,x,y,change_x,change_y):
+    def __init__(self,x,y,changeX,changeY):
         #ініціація створення спрайту
         pygame.sprite.Sprite.__init__(self)
         #задання початкового напряму для привида
-        self.change_x = change_x
-        self.change_y = change_y
+        self.changeX = changeX
+        self.changeY = changeY
         #завантаження зображення спрайту
         self.image = pygame.image.load("slime.png").convert_alpha()
         self.rect = self.image.get_rect()
         #визначення розташування спрайту на мапі
         self.rect.topleft = (x,y)
                 
-def draw_enviroment(screen):
+def drawEnviroment(screen):
     #метод створення ігрового поля
     engrid = enumerate(grid)
     #перебір елементів в заданій попередньо матриці по рядках та стовпцях
@@ -101,5 +101,3 @@ def draw_enviroment(screen):
                     pygame.draw.line(screen, BLUE , [j*32, i*32], [j*32+32,i*32], 3)
                 elif i == 0:
                     pygame.draw.line(screen, BLUE ,  [j*32, i*32], [j*32+32,i*32], 3)
-    
-

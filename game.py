@@ -4,10 +4,13 @@ from pygame.constants import GL_GREEN_SIZE
 from player import Player
 from enemies import *
 from pathfinding import *
+from datetime import datetime
+import time
+
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
-SCREEN_WIDTH = 672
-SCREEN_HEIGHT = 640
+SCREENWIDTH = 672
+SCREENHEIGHT = 640
 
 #визначення кольорів для подальшого використання
 BLACK = (0,0,0)
@@ -15,6 +18,7 @@ WHITE = (255,255,255)
 BLUE = (0,0,255)
 RED = (255,0,0)
 
+#задання початкових координатів для гравця
 startI = 9
 startJ = 0
 
@@ -23,33 +27,34 @@ class Game(object):
     def __init__(self):
         #ініціація створення гри, ігрового вікна тощо
         #тимчасове призупинення гри для процесу її створення
-        self.game_over = True
+        self.gameOver = True
         self.font = pygame.font.Font(None, 30)
         #створення змінної для визначення рахунку гравця
         self.score = 0
         #створення гравця
         self.player = Player(startJ*32,startI*32,"player.png")
         #стоворення блоків (шляхів), якими пересуватиметься гравець
-        self.horizontal_blocks = pygame.sprite.Group()
-        self.vertical_blocks = pygame.sprite.Group()
+        self.horizontalBlocks = pygame.sprite.Group()
+        self.verticalBlocks = pygame.sprite.Group()
         #створення груп монеток (їжі) для гравця
-        self.dots_group = pygame.sprite.Group()
+        self.dotsGroup = pygame.sprite.Group()
         #створення допоміжних блоків, що зображатимуть стіни та не даватимуть гравцю їх перетинати
-        self.blocks_group = pygame.sprite.Group()
-        self.path_group = pygame.sprite.Group()
+        self.blocksGroup = pygame.sprite.Group()
+        #створення списку для точок шляху
+        self.pathGroup = pygame.sprite.Group()
         #перетворення колекції поля для проходження по ній надалі
-        gridforblocks = enumerate(grid)
+        gridForBlocks = enumerate(grid)
 
         #перебір елементів поля для побудови шляхів пересування гравця (можливе лише там, де одиниці) та розташування стін (де нулі)
-        for i,row in gridforblocks:
+        for i,row in gridForBlocks:
             for j,item in enumerate(row):
                 if item == 1:
                     if (j+1<wid and grid[i][j+1] == 0) and (grid[i][j-1] == 0):
-                        self.vertical_blocks.add(Block(j*32+8,i*32+8,BLACK,16,16))
+                        self.verticalBlocks.add(Block(j*32+8,i*32+8,BLACK,16,16))
                     if (i+1<high and grid[i+1][j] == 0) and (grid[i-1][j] == 0):
-                        self.horizontal_blocks.add(Block(j*32+8,i*32 + 8,BLACK,16,16))
+                        self.horizontalBlocks.add(Block(j*32+8,i*32 + 8,BLACK,16,16))
                 elif item == 0:
-                    self.blocks_group.add(Block(j*32 + 8,i*32 + 8,BLUE,20,20))
+                    self.blocksGroup.add(Block(j*32 + 8,i*32 + 8,BLUE,20,20))
         
         #створення ворогів (привидів)
         self.enemies = pygame.sprite.Group()
@@ -59,24 +64,36 @@ class Game(object):
         self.enemies.add(Slime(352,288,0,2))
         self.enemies.add(Slime(384,288,2,0))
 
-        #створення та додавання "їжі" на поле (всюди, де немає стін)
+        #створення та додавання "їжі" на поле 
         listOfXY = []
         for i, row in enumerate(grid):
             for j, item in enumerate(row):
                 if item != 0:
-                    coordinates = [i, j]
+                    #заповнення списку точок, де можливе розташування їжі
+                    coordinates = [i, j] 
                     listOfXY.append(coordinates)
-        #           self.dots_group.add(Ellipse(j*32+12,i*32+12,WHITE,8,8))
-        foodPosition = random.randint(0, len(listOfXY)-1)
-        endI = listOfXY[foodPosition][0] 
-        endJ = listOfXY[foodPosition][1] 
-        self.dots_group.add(Ellipse(endJ* 32 + 5, endI* 32 + 5, WHITE, 24, 24))
-        #self.path_group = bfs(startI, startJ, endI, endJ)
-        #self.path_group = pathForDfs(startI, startJ, endI, endJ)
+        #           #заповнення списку їжі
+        #           self.dotsGroup.add(Ellipse(j*32+12,i*32+12,WHITE,8,8))
+        ##визначення випадкової точки для однієї монетки (кінцевої точки шляху)
+        # foodPosition = random.randint(0, len(listOfXY)-1)
+        # endI = listOfXY[foodPosition][0] 
+        # endJ = listOfXY[foodPosition][1] 
+        endI = 15
+        endJ = 14
+        self.dotsGroup.add(Ellipse(endJ* 32 + 5, endI* 32 + 5, WHITE, 24, 24))
+        #вимірювання часу виконання пошуку
+        startTime = datetime.now()
+        #виконання обраного пошуку шляху
+        #self.pathGroup = bfs(startI, startJ, endI, endJ)
+        self.pathGroup = pathForDfs(startI, startJ, endI, endJ)
+        endTime = datetime.now() - startTime
+        #вивід списку точок, з яких складається шлях, та часу виконання
+        print([i[::-1] for i in self.pathGroup[::-1]])
+        print("Time: ", endTime)
         #відновлення гри одразу після завершеня її створення
-        self.game_over = False
+        self.gameOver = False
 
-    def process_events(self):
+    def processEvents(self):
         #метод для зчитування подій, тобто дій гравця, таких як креування гравцем за допомогою клавіатури
         #якщо гравець зробив хоч щось відбувається наступне:
         for event in pygame.event.get(): 
@@ -87,63 +104,63 @@ class Game(object):
             if event.type == pygame.KEYDOWN:
                 #при натисканні клавіші "Ентер" відбувається запуск нової гри
                 if event.key == pygame.K_RETURN:
-                    print(ucs())
                     self.__init__()
                 #при натисанні клавіші праворуч, ліворуч, вгору чи вниз відбувається рух гравця у відповідному напрямку
                 elif event.key == pygame.K_RIGHT:
-                    self.player.move_right()
+                    self.player.moveRight()
                 elif event.key == pygame.K_LEFT:
-                    self.player.move_left()
+                    self.player.moveLeft()
                 elif event.key == pygame.K_UP:
-                    self.player.move_up()
+                    self.player.moveUp()
                 elif event.key == pygame.K_DOWN:
-                    self.player.move_down()
+                    self.player.moveDown()
                 #при натисканні клавіші "ESCAPE" відбувається завершення гри
                 elif event.key == pygame.K_ESCAPE:
-                    self.game_over = True
+                    self.gameOver = True
 
             #якщо гравець відпускає клавішу клавіатури відбувається наступне:
             elif event.type == pygame.KEYUP:
                 #при відпусканні клавіші праворуч, ліворуч, вгору чи вниз припиняється рух гравця у відповідному напрямку
                 if event.key == pygame.K_RIGHT:
-                    self.player.stop_move_right()
+                    self.player.stopMoveRight()
                 elif event.key == pygame.K_LEFT:
-                    self.player.stop_move_left()
+                    self.player.stopMoveLeft()
                 elif event.key == pygame.K_UP:
-                    self.player.stop_move_up()
+                    self.player.stopMoveUp()
                 elif event.key == pygame.K_DOWN:
-                    self.player.stop_move_down()
+                    self.player.stopMoveDown()
         return False
 
-    def run_logic(self):
+    def runLogic(self):
         #метод, що забезпечує процес проходу гри
-        if not self.game_over:
+        if not self.gameOver:
             #доки статус гри "не завершено", відбувається оновлення стану гравця, його розташування
-            self.player.update(self.horizontal_blocks,self.vertical_blocks, self.blocks_group)
+            self.player.update(self.horizontalBlocks,self.verticalBlocks, self.blocksGroup)
             #при кожному зіткненні гравця з їжею відбувається зарахування балу для гравця та зникнення їжі
-            block_hit_list = pygame.sprite.spritecollide(self.player,self.dots_group,True)
-            if len(block_hit_list) > 0:
+            blockHitList = pygame.sprite.spritecollide(self.player,self.dotsGroup,True)
+            if len(blockHitList) > 0:
                 self.score += 1
-                print(len(self.dots_group))
+                print(len(self.dotsGroup))
             #якщо на полі не залишилось їжі, то гру завершено
-            if len(self.dots_group) == 0:
+            if len(self.dotsGroup) == 0:
                 self.player.explosion = True
             #якщо гравцеь стикаєтьсяз ворогом, відбувається вибух гравця та завершення гри, зміна статусу гри на "завершено"
-            block_hit_list = pygame.sprite.spritecollide(self.player,self.enemies,True)
-            if len(block_hit_list) > 0:
+            blockHitList = pygame.sprite.spritecollide(self.player,self.enemies,True)
+            if len(blockHitList) > 0:
                 self.player.explosion = True 
-            self.game_over = self.player.game_over
+            self.gameOver = self.player.gameOver
     
 
-    def display_frame(self,screen):
+    def displayFrame(self,screen):
         #метод створення екрану гри, зображення поля, необхідних спрайтів, груп, текстів  тощо
         screen.fill(BLACK)
-        self.horizontal_blocks.draw(screen)
-        self.vertical_blocks.draw(screen)
-        draw_enviroment(screen)
-        self.dots_group.draw(screen)
+        self.horizontalBlocks.draw(screen)
+        self.verticalBlocks.draw(screen)
+        drawEnviroment(screen)
+        self.dotsGroup.draw(screen)
         self.enemies.draw(screen)
-        #drawPath(self.path_group, screen)
+        #зображення знайденого шляху на полі
+        drawPath(self.pathGroup, screen)
         screen.blit(self.player.image,self.player.rect)
         text = self.font.render("Score: " + str(self.score),True,GREEN)
         messagePart1 = self.font.render("Tap ENTER", True, GREEN)

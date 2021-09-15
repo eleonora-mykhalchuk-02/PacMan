@@ -3,8 +3,8 @@ from enemies import *
 import random
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
-SCREEN_WIDTH = 672
-SCREEN_HEIGHT = 640
+SCREENWIDTH = 672
+SCREENHEIGHT = 640
 
 #визначення кольорів для подальшого використання
 BLACK = (0,0,0)
@@ -12,10 +12,10 @@ WHITE = (255,255,255)
 
 #клас гравець - пакмен
 class Player(pygame.sprite.Sprite):
-    change_x = 0
-    change_y = 0
+    changeX = 0
+    changeY = 0
     explosion = False
-    game_over = False
+    gameOver = False
     def __init__(self,x,y,filename):
         #ініціація створення спрайта гравця, задання кольору,розташування, додаткових спрайтів тощо
         pygame.sprite.Sprite.__init__(self)
@@ -25,100 +25,100 @@ class Player(pygame.sprite.Sprite):
         self.rect.topleft = (x,y) # початкове положення гравця
         #спрайт та налаштування анімації ходьби
         img = pygame.image.load("walk.png").convert()
-        self.move_right_animation = Animation(img,32,32)
-        self.move_left_animation = Animation(pygame.transform.flip(img,True,False),32,32)
-        self.move_up_animation = Animation(pygame.transform.rotate(img,90),32,32)
-        self.move_down_animation = Animation(pygame.transform.rotate(img,270),32,32)
+        self.moveRightAnimation = Animation(img,32,32)
+        self.moveLeftAnimation = Animation(pygame.transform.flip(img,True,False),32,32)
+        self.moveUpAnimation = Animation(pygame.transform.rotate(img,90),32,32)
+        self.moveDownAnimation = Animation(pygame.transform.rotate(img,270),32,32)
         #спрайт та налаштування анімації вибуху
         img = pygame.image.load("explosion.png").convert()
-        self.explosion_animation = Animation(img,30,30)
+        self.explosionAnimation = Animation(img,30,30)
         #збереження зображення гравця
-        self.player_image = pygame.image.load(filename).convert()
-        self.player_image.set_colorkey(BLACK)
+        self.playerImage = pygame.image.load(filename).convert()
+        self.playerImage.set_colorkey(BLACK)
 
-    def update(self,horizontal_blocks,vertical_blocks, blocks_group):
+    def update(self,horizontalBlocks,verticalBlocks, blocksGroup):
         #метод запобішання перетину перешкод гравцем
         if not self.explosion:
             #перешкоджання гравецеві проходити крізь стіни всередині поля
-            for block in pygame.sprite.spritecollide(self,blocks_group,False):
+            for block in pygame.sprite.spritecollide(self,blocksGroup,False):
                 self.rect.x -= (block.rect.x - self.rect.x)*0.1
                 self.rect.y -= (block.rect.y - self.rect.y)*0.1
-                self.change_x = 0
-                self.change_y = 0
+                self.changeX = 0
+                self.changeY = 0
             #перешкоджання гравцеві виходити за межі поля
             if self.rect.right <= 30:
                 self.rect.left = 2
-            if self.rect.left >= SCREEN_WIDTH - 30:
-                self.rect.right = SCREEN_WIDTH - 2
+            if self.rect.left >= SCREENWIDTH - 30:
+                self.rect.right = SCREENWIDTH - 2
             if self.rect.bottom <= 30:
                 self.rect.top = 2
-            if self.rect.top >= SCREEN_HEIGHT - 30:
-                self.rect.bottom = SCREEN_HEIGHT - 2
+            if self.rect.top >= SCREENHEIGHT - 30:
+                self.rect.bottom = SCREENHEIGHT - 2
             #зміна та збереження координатів гравця
-            self.rect.x += self.change_x
-            self.rect.y += self.change_y
+            self.rect.x += self.changeX
+            self.rect.y += self.changeY
             #заборона на спробу перетнути лінії вздовж дозволеної траекторії ходьби
-            for block in pygame.sprite.spritecollide(self,horizontal_blocks,False):
+            for block in pygame.sprite.spritecollide(self,horizontalBlocks,False):
                 self.rect.centery = block.rect.centery
-                self.change_y = 0
-            for block in pygame.sprite.spritecollide(self,vertical_blocks,False):
+                self.changeY = 0
+            for block in pygame.sprite.spritecollide(self,verticalBlocks,False):
                 self.rect.centerx = block.rect.centerx
-                self.change_x = 0
+                self.changeX = 0
             #ініціація виконання анімацій
-            if self.change_x > 0:
-                self.move_right_animation.update(10)
-                self.image = self.move_right_animation.get_current_image()
-            elif self.change_x < 0:
-                self.move_left_animation.update(10)
-                self.image = self.move_left_animation.get_current_image()
+            if self.changeX > 0:
+                self.moveRightAnimation.update(10)
+                self.image = self.moveRightAnimation.getCurrentImage()
+            elif self.changeX < 0:
+                self.moveLeftAnimation.update(10)
+                self.image = self.moveLeftAnimation.getCurrentImage()
 
-            if self.change_y > 0:
-                self.move_down_animation.update(10)
-                self.image = self.move_down_animation.get_current_image()
-            elif self.change_y < 0:
-                self.move_up_animation.update(10)
-                self.image = self.move_up_animation.get_current_image()
+            if self.changeY > 0:
+                self.moveDownAnimation.update(10)
+                self.image = self.moveDownAnimation.getCurrentImage()
+            elif self.changeY < 0:
+                self.moveUpAnimation.update(10)
+                self.image = self.moveUpAnimation.getCurrentImage()
         else:
             #ініціація анімації вибуху та закінчення гри для гравця
-            if self.explosion_animation.index == self.explosion_animation.get_length() -1:
+            if self.explosionAnimation.index == self.explosionAnimation.getLength() -1:
                 pygame.time.wait(500)
-                self.game_over = True
-            self.explosion_animation.update(12)
-            self.image = self.explosion_animation.get_current_image()
+                self.gameOver = True
+            self.explosionAnimation.update(12)
+            self.image = self.explosionAnimation.getCurrentImage()
             
     #зміна координатів гравця в залежності від команди
-    def move_right(self):
-        self.change_x = 3
+    def moveRight(self):
+        self.changeX = 3
 
-    def move_left(self):
-        self.change_x = -3
+    def moveLeft(self):
+        self.changeX = -3
 
-    def move_up(self):
-        self.change_y = -3
+    def moveUp(self):
+        self.changeY = -3
 
-    def move_down(self):
-        self.change_y = 3
+    def moveDown(self):
+        self.changeY = 3
     
     #припинення руху гравця на полі
-    def stop_move_right(self):
-        if self.change_x != 0:
-            self.image = self.player_image
-        self.change_x = 0
+    def stopMoveRight(self):
+        if self.changeX != 0:
+            self.image = self.playerImage
+        self.changeX = 0
 
-    def stop_move_left(self):
-        if self.change_x != 0:
-            self.image = pygame.transform.flip(self.player_image,True,False)
-        self.change_x = 0
+    def stopMoveLeft(self):
+        if self.changeX != 0:
+            self.image = pygame.transform.flip(self.playerImage,True,False)
+        self.changeX = 0
 
-    def stop_move_up(self):
-        if self.change_y != 0:
-            self.image = pygame.transform.rotate(self.player_image,90)
-        self.change_y = 0
+    def stopMoveUp(self):
+        if self.changeY != 0:
+            self.image = pygame.transform.rotate(self.playerImage,90)
+        self.changeY = 0
 
-    def stop_move_down(self):
-        if self.change_y != 0:
-            self.image = pygame.transform.rotate(self.player_image,270)
-        self.change_y = 0
+    def stopMoveDown(self):
+        if self.changeY != 0:
+            self.image = pygame.transform.rotate(self.playerImage,270)
+        self.changeY = 0
 
 #клас анімацій (базових їх налаштувань)
 class Animation(object):
@@ -127,35 +127,35 @@ class Animation(object):
         #завантаження спрайту
         self.sprite_sheet = img
         #створення списку зображень
-        self.image_list = []
-        self.load_images(width,height)
+        self.imageList = []
+        self.loadImages(width,height)
         #стоврення змінної, що визначатиме порядок аніманцій
         self.index = 0
         #створення змінної, що визначатиме час роботи програми в необхідних завданнях
         self.clock = 1
         
-    def load_images(self,width,height):
+    def loadImages(self,width,height):
         #завантаження та перебір всіх вказаних зображень
         for y in range(0,self.sprite_sheet.get_height(),height):
             for x in range(0,self.sprite_sheet.get_width(),width): 
                 # load images into a list
-                img = self.get_image(x,y,width,height)
-                self.image_list.append(img)
+                img = self.getImage(x,y,width,height)
+                self.imageList.append(img)
 
-    def get_image(self,x,y,width,height):
+    def getImage(self,x,y,width,height):
         #отримання, створення та відображення готового спрайта
         image = pygame.Surface([width,height]).convert()
         image.blit(self.sprite_sheet,(0,0),(x,y,width,height))
         image.set_colorkey((0,0,0))
         return image
 
-    def get_current_image(self):
+    def getCurrentImage(self):
         #визначення спрайта, що задіяний
-        return self.image_list[self.index]
+        return self.imageList[self.index]
 
-    def get_length(self):
+    def getLength(self):
         #повернення довжини списку зображень
-        return len(self.image_list)
+        return len(self.imageList)
 
     def update(self,fps=30):
         #метод оновлення станів для анімацій
@@ -168,7 +168,7 @@ class Animation(object):
 
         if self.clock in l:
             self.index += 1
-            if self.index == len(self.image_list):
+            if self.index == len(self.imageList):
                 self.index = 0
 
             
