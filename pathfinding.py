@@ -1,5 +1,6 @@
 from enemies import *
 from game import*
+import sys
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
 SCREENWIDTH = 672
@@ -97,19 +98,105 @@ def dfs(startI, startJ, endI, endJ, pathes, gridForDfs):
     pathDfs.pop()
     return 
 
-# def ucs():
-#     gridForUcs = []
-#     for i in range(0, len(grid)*2 - 1):
-#         row = []
-#         for j in range(0, len(grid[0])*2 - 1):
-#             if (i % 2 == 0) and (j % 2 == 0):
-#                 row.append(grid[int(i/2)][int(j/2)])
-#             elif(i % 2 != 0) and (j % 2 != 0):
-#                 row.append(0)
-#             else:
-#                 row.append(random.randint(2,9))
-#         gridForUcs.append(row)
-#     gridForUcs
+def ucs(mazeForUcs, startX, startY, endX, endY):
+    maze = mazeForUcs
+    startX = int(startX)*2
+    startY = int(startY)*2
+    endX = int(endX)*2
+    endY = int(endY)*2
+
+    # list of Nodes (with coordinates)
+    listOfNodes = []
+    # Nodes weights
+    listOfWeights = []
+
+    listOfNodes.append(Node(startX, startY, None))
+    listOfWeights.append(0)
+
+    # randomize weights for fields
+    newGrid, visited = randomizeWeights(maze)
+
+    startNode = None
+    path = []
+    while len(listOfNodes) > 0:
+        minIndex = listOfWeights.index(min(listOfWeights))
+        node = listOfNodes[minIndex]
+        weightNode = listOfWeights[minIndex]
+        newGrid[node.X][node.Y] = weightNode 
+        listOfWeights[minIndex] = sys.maxsize
+
+        startNode = Node(node.X, node.Y, startNode)
+        visited[node.X][node.Y] = 1
+
+        # if we find endpoint
+        if node.X == endX and node.Y == endY:
+            path = findPathUcs(node)
+            print('path:', path)
+            return path
+
+        tempArray = []
+        tempWeightIndexesArray = []
+        if node.X - 2 >= 0 and visited[node.X - 2][node.Y] != 1:
+            tempArray.append(Node(node.X - 2, node.Y,node))
+            tempWeightIndexesArray.append(weightNode + newGrid[node.X - 1][node.Y])
+        if node.Y - 2 >= 0 and visited[node.X][node.Y - 2] != 1:
+            tempArray.append(Node(node.X, node.Y - 2,node))
+            tempWeightIndexesArray.append(weightNode + newGrid[node.X][node.Y - 1])
+        if node.X + 2 < len(newGrid) and visited[node.X + 2][node.Y] != 1:
+            tempArray.append(Node(node.X + 2, node.Y,node))
+            tempWeightIndexesArray.append(weightNode + newGrid[node.X + 1][node.Y])
+        if node.Y + 2 < len(newGrid[0]) and visited[node.X][node.Y + 2] != 1:
+            tempArray.append(Node(node.X, node.Y + 2,node))
+            tempWeightIndexesArray.append(weightNode + newGrid[node.X][node.Y + 1])
+
+        while len(tempArray) > 0:
+            tempNode = tempArray.pop()
+            listOfNodes.append(tempNode)
+            listOfWeights.append(tempWeightIndexesArray.pop())
+
+class Node:
+    def __init__(self, x, y, newNode = None):
+        self.X = x
+        self.Y = y
+        self.Node = newNode
+    def name(self,new):
+        if self.Node != None:
+          new.append(self.Node)
+          print(self.X," ", self.Y)
+          return self.name(new)
+        else:
+            return new
+
+def randomizeWeights(grid):
+    newGrid = []
+    visitedGrid = []
+    for i in range(len(grid)*2 - 1):
+        row = []
+        addRow = []
+        for j in range(len(grid[0])*2 - 1):
+            if (i % 2 == 0) and (j % 2 == 0):
+                row.append(grid[int(i/2)][int(j/2)])
+                if(grid[int(i/2)][int(j/2)] == 1):
+                    addRow.append(0)
+                else:
+                    addRow.append(1)
+            elif(i % 2 != 0) and (j % 2 != 0):
+                row.append(0)
+                addRow.append(1)
+            else:
+                row.append(random.randint(2,9))
+                addRow.append(0)
+        newGrid.append(row)
+        visitedGrid.append(addRow)
+
+    return newGrid, visitedGrid
+
+def findPathUcs(node):
+    queue = []
+    while(node != None):
+        queue.append((node.X/2,node.Y/2))
+        node = node.Node
+    return queue
 
 #метод для зображення шляху на полі
 def drawPath(path, screen):

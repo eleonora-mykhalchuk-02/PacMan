@@ -75,17 +75,18 @@ class Game(object):
         #           #заповнення списку їжі
         #           self.dotsGroup.add(Ellipse(j*32+12,i*32+12,WHITE,8,8))
         ##визначення випадкової точки для однієї монетки (кінцевої точки шляху)
-        # foodPosition = random.randint(0, len(listOfXY)-1)
-        # endI = listOfXY[foodPosition][0] 
-        # endJ = listOfXY[foodPosition][1] 
-        endI = 15
-        endJ = 14
+        foodPosition = random.randint(0, len(listOfXY)-1)
+        endI = listOfXY[foodPosition][0] 
+        endJ = listOfXY[foodPosition][1] 
+        # endI = 15
+        # endJ = 14
         self.dotsGroup.add(Ellipse(endJ* 32 + 5, endI* 32 + 5, WHITE, 24, 24))
         #вимірювання часу виконання пошуку
         startTime = datetime.now()
         #виконання обраного пошуку шляху
         #self.pathGroup = bfs(startI, startJ, endI, endJ)
-        self.pathGroup = pathForDfs(startI, startJ, endI, endJ)
+        #self.pathGroup = pathForDfs(startI, startJ, endI, endJ)
+        self.pathGroup = ucs(grid, startI, startJ, endI, endJ)
         endTime = datetime.now() - startTime
         #вивід списку точок, з яких складається шлях, та часу виконання
         print([i[::-1] for i in self.pathGroup[::-1]])
