@@ -31,8 +31,6 @@ class Game(object):
         self.font = pygame.font.Font(None, 30)
         #створення змінної для визначення рахунку гравця
         self.score = 0
-        #створення гравця
-        self.player = Player(startJ*32,startI*32,"player.png")
         #стоворення блоків (шляхів), якими пересуватиметься гравець
         self.horizontalBlocks = pygame.sprite.Group()
         self.verticalBlocks = pygame.sprite.Group()
@@ -58,11 +56,11 @@ class Game(object):
         
         #створення ворогів (привидів)
         self.enemies = pygame.sprite.Group()
-        self.enemies.add(Slime(256,288,0,2))
-        self.enemies.add(Slime(288,288,0,-2))
-        self.enemies.add(Slime(320,288,0,2))
-        self.enemies.add(Slime(352,288,0,2))
-        self.enemies.add(Slime(384,288,2,0))
+        # self.enemies.add(Slime(256,288,0,2))
+        # self.enemies.add(Slime(288,288,0,-2))
+        # self.enemies.add(Slime(320,288,0,2))
+        # self.enemies.add(Slime(352,288,0,2))
+        # self.enemies.add(Slime(384,288,2,0))
 
         #створення та додавання "їжі" на поле 
         listOfXY = []
@@ -74,22 +72,43 @@ class Game(object):
                     listOfXY.append(coordinates)
         #           #заповнення списку їжі
         #           self.dotsGroup.add(Ellipse(j*32+12,i*32+12,WHITE,8,8))
+        #створення гравця
+        playerPosition = random.randint(0, len(listOfXY)-1)
+        startI = listOfXY[playerPosition][0] 
+        startJ = listOfXY[playerPosition][1] 
+        self.player = Player(startJ*32,startI*32,"player.png")
         ##визначення випадкової точки для однієї монетки (кінцевої точки шляху)
-        foodPosition = random.randint(0, len(listOfXY)-1)
-        endI = listOfXY[foodPosition][0] 
-        endJ = listOfXY[foodPosition][1] 
+        # foodPosition = random.randint(0, len(listOfXY)-1)
+        # endI = listOfXY[foodPosition][0] 
+        # endJ = listOfXY[foodPosition][1] 
         # endI = 15
         # endJ = 14
-        self.dotsGroup.add(Ellipse(endJ* 32 + 5, endI* 32 + 5, WHITE, 24, 24))
+        # self.dotsGroup.add(Ellipse(endJ* 32 + 5, endI* 32 + 5, WHITE, 24, 24))
+        copiedList = listOfXY.copy()
+        listOfDotsForPath = []
+        listOfDotsForPath.append(copiedList[playerPosition])
+        copiedList.remove(copiedList[playerPosition])
+        listOfXY.remove(listOfXY[playerPosition])
+        # #проходження через точки
+        #amount = 4
+        amount = len(listOfXY)
+        for i in range(4):
+            foodPosition = random.randint(0, len(copiedList)-1)
+            self.dotsGroup.add(Ellipse(copiedList[foodPosition][1]* 32 + 5, copiedList[foodPosition][0]* 32 + 5, WHITE, 24, 24))
+            listOfDotsForPath.append(copiedList[foodPosition])
+            copiedList.remove(copiedList[foodPosition])
+        listOfDotsForPath.sort()
         #вимірювання часу виконання пошуку
         startTime = datetime.now()
         #виконання обраного пошуку шляху
         #self.pathGroup = bfs(startI, startJ, endI, endJ)
         #self.pathGroup = pathForDfs(startI, startJ, endI, endJ)
-        self.pathGroup = ucs(grid, startI, startJ, endI, endJ)
+        #self.pathGroup = ucs(grid, startI, startJ, endI, endJ)
+        #self.pathGroup = aStar(grid, startI, startJ, endI, endJ)
+        self.pathGroup = pathThroughDots(grid, listOfDotsForPath)
         endTime = datetime.now() - startTime
         #вивід списку точок, з яких складається шлях, та часу виконання
-        print([i[::-1] for i in self.pathGroup[::-1]])
+        # print([i[::-1] for i in self.pathGroup[::-1]])
         print("Time: ", endTime)
         #відновлення гри одразу після завершеня її створення
         self.gameOver = False
@@ -161,12 +180,12 @@ class Game(object):
         self.dotsGroup.draw(screen)
         self.enemies.draw(screen)
         #зображення знайденого шляху на полі
-        drawPath(self.pathGroup, screen)
+        drawPath(self, self.pathGroup, screen, True)
         screen.blit(self.player.image,self.player.rect)
         text = self.font.render("Score: " + str(self.score),True,GREEN)
         messagePart1 = self.font.render("Tap ENTER", True, GREEN)
         messagePart2 = self.font.render("to restart", True, GREEN)
-        screen.blit(text,[180,53])
-        screen.blit(messagePart1,[395,45])
-        screen.blit(messagePart2,[405,65])
+        screen.blit(text,[180,10])
+        screen.blit(messagePart1,[395,10])
+        screen.blit(messagePart2,[405,25])
         pygame.display.flip()

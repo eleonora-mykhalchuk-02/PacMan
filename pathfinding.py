@@ -1,3 +1,4 @@
+from numpy import number
 from enemies import *
 from game import*
 import sys
@@ -131,7 +132,6 @@ def ucs(mazeForUcs, startX, startY, endX, endY):
         # if we find endpoint
         if node.X == endX and node.Y == endY:
             path = findPathUcs(node)
-            print('path:', path)
             return path
 
         tempArray = []
@@ -153,6 +153,64 @@ def ucs(mazeForUcs, startX, startY, endX, endY):
             tempNode = tempArray.pop()
             listOfNodes.append(tempNode)
             listOfWeights.append(tempWeightIndexesArray.pop())
+
+def aStar(mazeForA, startX, startY, endX, endY):
+    maze = mazeForA
+    startX = int(startX)*2
+    startY = int(startY)*2
+    endX = int(endX)*2
+    endY = int(endY)*2
+
+    # list of Nodes (with coordinates)
+    listOfNodes = []
+    # Nodes weights
+    listOfWeights = []
+
+    listOfNodes.append(Node(startX, startY, None))
+    listOfWeights.append(0)
+
+    # randomize weights for fields
+    newGrid, visited = randomizeWeights(maze)
+
+    startNode = None
+    path = []
+    while len(listOfNodes) > 0:
+        minIndex = listOfWeights.index(min(listOfWeights))
+        node = listOfNodes[minIndex]
+        weightNode = listOfWeights[minIndex]
+        newGrid[node.X][node.Y] = weightNode 
+        listOfWeights[minIndex] = sys.maxsize
+
+        startNode = Node(node.X, node.Y, startNode)
+        visited[node.X][node.Y] = 1
+
+        # if we find endpoint
+        if node.X == endX and node.Y == endY:
+            path = findPathUcs(node)
+            return path
+
+        tempArray = []
+        tempWeightIndexesArray = []
+        if node.X - 2 >= 0 and visited[node.X - 2][node.Y] != 1:
+            tempArray.append(Node(node.X - 2, node.Y,node))
+            tempWeightIndexesArray.append(weightNode + newGrid[node.X - 1][node.Y] + heuristic((node.X - 1,node.Y),(endX,endY)))
+        if node.Y - 2 >= 0 and visited[node.X][node.Y - 2] != 1:
+            tempArray.append(Node(node.X, node.Y - 2,node))
+            tempWeightIndexesArray.append(weightNode + newGrid[node.X][node.Y - 1] + heuristic((node.X,node.Y - 1),(endX,endY)))
+        if node.X + 2 < len(newGrid) and visited[node.X + 2][node.Y] != 1:
+            tempArray.append(Node(node.X + 2, node.Y,node))
+            tempWeightIndexesArray.append(weightNode + newGrid[node.X + 1][node.Y] + heuristic((node.X + 1,node.Y),(endX,endY)))
+        if node.Y + 2 < len(newGrid[0]) and visited[node.X][node.Y + 2] != 1:
+            tempArray.append(Node(node.X, node.Y + 2,node))
+            tempWeightIndexesArray.append(weightNode + newGrid[node.X][node.Y + 1] + heuristic((node.X,node.Y + 1),(endX,endY)))
+
+        while len(tempArray) > 0:
+            tempNode = tempArray.pop()
+            listOfNodes.append(tempNode)
+            listOfWeights.append(tempWeightIndexesArray.pop())
+        
+
+
 
 class Node:
     def __init__(self, x, y, newNode = None):
@@ -198,10 +256,36 @@ def findPathUcs(node):
         node = node.Node
     return queue
 
+def heuristic(a, b):
+    manhattan = abs(a[0] - b[0]) + abs(a[1] - b[1])
+    euclide = ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
+    euclideSquare = (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2
+    # cost = manhattan
+    # cost = euclide
+    cost = euclideSquare
+    return cost
+
+def pathThroughDots(maze, listOfDots):
+    pathes = []
+    for i in range(len(listOfDots) - 1):
+        queueAStar = aStar(maze, listOfDots[i][0], listOfDots[i][1], listOfDots[i + 1][0], listOfDots[i + 1][1])
+        queueAStar.reverse()
+        pathes.append(queueAStar)
+    path = []
+    for row in pathes:
+        for item in row:
+            path.append(item)
+    return path
+
 #метод для зображення шляху на полі
-def drawPath(path, screen):
-        for point in path:
-            pygame.draw.rect(screen, RED, pygame.Rect(point[1]*32 + 9, point[0]*32 + 9, 16, 16))
+def drawPath(self, path, screen, wholeGrid):
+    number = 0
+    for i in range(len(path)):
+        color = RED
+        if (i == len(path) - 1) and (wholeGrid == True):
+            color = GREEN
+        pygame.draw.rect(screen, color, pygame.Rect(path[i][1]*32 + 9, path[i][0]*32 + 9, 16, 16))
+        
             
 
 
