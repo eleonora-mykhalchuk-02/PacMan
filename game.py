@@ -97,7 +97,6 @@ class Game(object):
             self.dotsGroup.add(Ellipse(copiedList[foodPosition][1]* 32 + 5, copiedList[foodPosition][0]* 32 + 5, WHITE, 24, 24))
             listOfDotsForPath.append(copiedList[foodPosition])
             copiedList.remove(copiedList[foodPosition])
-        listOfDotsForPath.sort()
         #вимірювання часу виконання пошуку
         startTime = datetime.now()
         #виконання обраного пошуку шляху
