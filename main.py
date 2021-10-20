@@ -15,6 +15,7 @@ def main():
     clock = pygame.time.Clock()
     #створення ігрового об'єкту
     game = Game()
+    game.gameOver = False
     while not done:
         #доки гравець не вийде з гри, відбувається зчитування його дій (натискання на клавіші тощо)
         done = game.processEvents()
@@ -22,7 +23,7 @@ def main():
         game.runLogic()
         #створення графіки та самого екрану гри
         game.displayFrame(screen)
-        clock.tick(30)
+        clock.tick(1000)
     #після завершення гравцем гри, відбувається вихід з неї
     pygame.quit()
 

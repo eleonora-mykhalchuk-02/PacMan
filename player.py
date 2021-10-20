@@ -16,7 +16,7 @@ class Player(pygame.sprite.Sprite):
     changeY = 0
     explosion = False
     gameOver = False
-    def __init__(self,x,y,filename):
+    def __init__(self,x,y,filename, controlByGame = False):
         #ініціація створення спрайта гравця, задання кольору,розташування, додаткових спрайтів тощо
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(filename).convert()
@@ -35,8 +35,10 @@ class Player(pygame.sprite.Sprite):
         #збереження зображення гравця
         self.playerImage = pygame.image.load(filename).convert()
         self.playerImage.set_colorkey(BLACK)
+        self.controlByGame = controlByGame
+        self.isGoingByGame = True
 
-    def update(self,horizontalBlocks,verticalBlocks, blocksGroup):
+    def update(self, blocksGroup):
         #метод запобішання перетину перешкод гравцем
         if not self.explosion:
             #перешкоджання гравецеві проходити крізь стіни всередині поля
@@ -46,24 +48,25 @@ class Player(pygame.sprite.Sprite):
                 self.changeX = 0
                 self.changeY = 0
             #перешкоджання гравцеві виходити за межі поля
-            if self.rect.right <= 30:
-                self.rect.left = 2
-            if self.rect.left >= SCREENWIDTH - 30:
-                self.rect.right = SCREENWIDTH - 2
-            if self.rect.bottom <= 30:
-                self.rect.top = 2
-            if self.rect.top >= SCREENHEIGHT - 30:
-                self.rect.bottom = SCREENHEIGHT - 2
-            #зміна та збереження координатів гравця
+            if self.rect.right < 32:
+                self.rect.x -= (self.rect.x)*0.1
+                self.changeX = 0
+                self.changeY = 0
+            elif self.rect.left > SCREENWIDTH-32:
+                self.rect.x -= (SCREENWIDTH - self.rect.x)*0.1
+                self.changeX = 0
+                self.changeY = 0
+            if self.rect.bottom < 32:
+                self.rect.y -= (self.rect.y)*0.1
+                self.changeX = 0
+                self.changeY = 0
+            elif self.rect.top > SCREENHEIGHT-32:
+                self.rect.y -= (SCREENHEIGHT - self.rect.y)*0.1
+                self.changeX = 0
+                self.changeY = 0
             self.rect.x += self.changeX
             self.rect.y += self.changeY
-            #заборона на спробу перетнути лінії вздовж дозволеної траекторії ходьби
-            for block in pygame.sprite.spritecollide(self,horizontalBlocks,False):
-                self.rect.centery = block.rect.centery
-                self.changeY = 0
-            for block in pygame.sprite.spritecollide(self,verticalBlocks,False):
-                self.rect.centerx = block.rect.centerx
-                self.changeX = 0
+
             #ініціація виконання анімацій
             if self.changeX > 0:
                 self.moveRightAnimation.update(10)
@@ -85,19 +88,40 @@ class Player(pygame.sprite.Sprite):
                 self.gameOver = True
             self.explosionAnimation.update(12)
             self.image = self.explosionAnimation.getCurrentImage()
-            
+
+    def playerRun(self,point):
+        x = ((self.rect.x)/32)
+        y = ((self.rect.y)/32)
+
+        if (point.Y) == x and (point.X) == y:
+            self.changeX = 0
+            self.changeY = 0
+            self.isGoingByGame = False
+        if abs((x) - point.Y) == 0:
+            self.changeX = 0
+            if y - point.X < 0:
+                self.moveDown()
+            if y - point.X > 0:
+                self.moveUp()
+        if (y) - point.X == 0:
+            self.changeY = 0
+            if x - point.Y < 0:
+                self.moveRight()
+            if x - point.Y > 0:
+                self.moveLeft()
+
     #зміна координатів гравця в залежності від команди
     def moveRight(self):
-        self.changeX = 3
+        self.changeX = 2
 
     def moveLeft(self):
-        self.changeX = -3
+        self.changeX = -2
 
     def moveUp(self):
-        self.changeY = -3
+        self.changeY = -2
 
     def moveDown(self):
-        self.changeY = 3
+        self.changeY = 2
     
     #припинення руху гравця на полі
     def stopMoveRight(self):
