@@ -1,3 +1,5 @@
+status,time,score,algorythm
+
 False,0:00:14.972289,243,minimax
 
 False,0:00:16.412669,252,minimax
@@ -39,4 +41,6 @@ False,0:00:16.378410,251,expectimax
 False,0:00:17.549612,252,expectimax
 
 True,0:00:18.286845,253,expectimax
+
+True,0:00:17.834528,253,minimax
 
