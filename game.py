@@ -128,7 +128,7 @@ class Game(object):
                 return True
             #якщо гравець натис будь-яку клавішу клавіатури, відбувається зчитування, яка саме клавіша задіяна
             if event.type == pygame.KEYDOWN:
-                if self.player.gameControled == False:
+                if self.player.controlByGame == False:
                     #при натисанні клавіші праворуч, ліворуч, вгору чи вниз відбувається рух гравця у відповідному напрямку
                     if event.key == pygame.K_RIGHT:
                         self.player.moveRight()
