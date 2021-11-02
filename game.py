@@ -53,7 +53,7 @@ class Game(object):
         self.enemies = pygame.sprite.Group()
         self.enemies.add(Slime(256,288, ghostTypes[0]))
         self.enemies.add(Slime(288,288,ghostTypes[1]))
-        self.enemies.add(Slime(320,288,ghostTypes[0]))
+        # self.enemies.add(Slime(320,288,ghostTypes[0]))
         # self.enemies.add(Slime(352,288,ghostTypes[0]))
         # self.enemies.add(Slime(384,288,ghostTypes[0]))
         for slime in self.enemies:
@@ -112,7 +112,7 @@ class Game(object):
         #вивід списку точок, з яких складається шлях, та часу виконання
         # print([i[::-1] for i in self.pathGroup[::-1]])
         #print("Time: ", endTime)
-        self.algorithm = minOrExpMax.minimax
+        self.algorithm = minOrExpMax.expectimax
         self.bestNextPosition = self.algorithm(grid,self.player,self.enemies,self.dotsGroup)
         self.startTimeGame = datetime.now()
 
