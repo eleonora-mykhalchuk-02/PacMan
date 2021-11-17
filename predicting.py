@@ -20,13 +20,16 @@ table = table.replace({"minimax":1})
 table["time"] = pd.to_timedelta(table['time']).dt.total_seconds()
 
 maxScore = table.loc[table['status'] == 1]['score'].max()
-print(maxScore)
 
-#інформація про дані
-count = len(table)
+maxTime = table['time'].max()
+print(maxTime)
+
+#вибір факторів та відгуку
 factorNames = ['time', 'algorythm']
 X = table[['time','algorythm']]
 Y = table['score']
+
+#навчальна модель
 x_train, x_test, y_train, y_test = train_test_split(X,np.array(Y),test_size=0.25,shuffle=True)
 model = LinearRegression().fit(x_train, y_train)
 
@@ -37,6 +40,7 @@ plt.plot(range(0, 300),range(0, 300))
 plt.scatter(y_test,y_pred)
 plt.show()
 
+#модель для генеральної вибірки
 linearModel = LinearRegression().fit(X, Y)
 
 a1,a2 = linearModel.coef_
