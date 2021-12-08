@@ -3,8 +3,8 @@ from enemies import *
 import random
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
-SCREENWIDTH = 672
-SCREENHEIGHT = 640
+SCREENWIDTH = 160
+SCREENHEIGHT = 160
 
 #визначення кольорів для подальшого використання
 BLACK = (0,0,0)
@@ -23,12 +23,14 @@ class Player(pygame.sprite.Sprite):
         self.image.set_colorkey(BLACK)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x,y) # початкове положення гравця
+        self.nextCoordX = -5
+        self.nextCoordY = -5
         #спрайт та налаштування анімації ходьби
         img = pygame.image.load("walk.png").convert()
-        self.moveRightAnimation = Animation(img,32,32)
-        self.moveLeftAnimation = Animation(pygame.transform.flip(img,True,False),32,32)
-        self.moveUpAnimation = Animation(pygame.transform.rotate(img,90),32,32)
-        self.moveDownAnimation = Animation(pygame.transform.rotate(img,270),32,32)
+        #self.moveRightAnimation = Animation(img,32,32)
+        #self.moveLeftAnimation = Animation(pygame.transform.flip(img,True,False),32,32)
+        #self.moveUpAnimation = Animation(pygame.transform.rotate(img,90),32,32)
+        #self.moveDownAnimation = Animation(pygame.transform.rotate(img,270),32,32)
         #спрайт та налаштування анімації вибуху
         img = pygame.image.load("explosion.png").convert()
         self.explosionAnimation = Animation(img,30,30)
@@ -36,7 +38,8 @@ class Player(pygame.sprite.Sprite):
         self.playerImage = pygame.image.load(filename).convert()
         self.playerImage.set_colorkey(BLACK)
         self.controlByGame = controlByGame
-        self.isGoingByGame = True
+        self.isGoingByGame = False
+
 
     def update(self, blocksGroup):
         #метод запобішання перетину перешкод гравцем
@@ -45,8 +48,16 @@ class Player(pygame.sprite.Sprite):
             for block in pygame.sprite.spritecollide(self,blocksGroup,False):
                 self.rect.x -= (block.rect.x - self.rect.x)*0.1
                 self.rect.y -= (block.rect.y - self.rect.y)*0.1
+                #self.changeX = 0
+                #self.changeY = 0
+
+            if (((self.rect.x) / 32) == self.nextCoordX or self.nextCoordY == ((self.rect.y) / 32)):
+                self.nextX = -5
+                self.nextY = -5
                 self.changeX = 0
                 self.changeY = 0
+                self.isGoingByGame = False
+
             #перешкоджання гравцеві виходити за межі поля
             if self.rect.right < 32:
                 self.rect.x -= (self.rect.x)*0.1
@@ -68,26 +79,26 @@ class Player(pygame.sprite.Sprite):
             self.rect.y += self.changeY
 
             #ініціація виконання анімацій
-            if self.changeX > 0:
-                self.moveRightAnimation.update(10)
-                self.image = self.moveRightAnimation.getCurrentImage()
-            elif self.changeX < 0:
-                self.moveLeftAnimation.update(10)
-                self.image = self.moveLeftAnimation.getCurrentImage()
-
-            if self.changeY > 0:
-                self.moveDownAnimation.update(10)
-                self.image = self.moveDownAnimation.getCurrentImage()
-            elif self.changeY < 0:
-                self.moveUpAnimation.update(10)
-                self.image = self.moveUpAnimation.getCurrentImage()
+            #if self.changeX > 0:
+            #    self.moveRightAnimation.update(10)
+            #    self.image = self.moveRightAnimation.getCurrentImage()
+            #elif self.changeX < 0:
+            #    self.moveLeftAnimation.update(10)
+            #    self.image = self.moveLeftAnimation.getCurrentImage()
+#
+            #if self.changeY > 0:
+            #    self.moveDownAnimation.update(10)
+            #    self.image = self.moveDownAnimation.getCurrentImage()
+            #elif self.changeY < 0:
+            #    self.moveUpAnimation.update(10)
+            #    self.image = self.moveUpAnimation.getCurrentImage()
         else:
             #ініціація анімації вибуху та закінчення гри для гравця
-            if self.explosionAnimation.index == self.explosionAnimation.getLength() -1:
-                pygame.time.wait(500)
+            #if self.explosionAnimation.index == self.explosionAnimation.getLength() -1:
+            #   pygame.time.wait(500)
                 self.gameOver = True
-            self.explosionAnimation.update(12)
-            self.image = self.explosionAnimation.getCurrentImage()
+            #self.explosionAnimation.update(12)
+            #self.image = self.explosionAnimation.getCurrentImage()
 
     def playerRun(self,point):
         x = ((self.rect.x)/32)
@@ -143,6 +154,35 @@ class Player(pygame.sprite.Sprite):
         if self.changeY != 0:
             self.image = pygame.transform.rotate(self.playerImage,270)
         self.changeY = 0
+
+    def isPossibleToGo(self,field, y, x):
+        x = round(x)
+        y = round(y)
+        environmentHight = len(field)
+        environmentWidth = len(field[0])
+
+        if x >= 0 and y < environmentWidth and y >= 0 and x < environmentHight and field[x][y] > 0:
+            return True
+        return False
+
+    def GetCordsInMaze(self):
+        return ((self.rect.x)/32),((self.rect.y)/32)
+
+# 0:Up, 1:Down,2:right,3:down
+    def RunToCoords(self, action):
+        if (self.isGoingByGame == False):
+            if (action == 0):
+                self.nextCoordY = ((self.rect.y)/32)-1
+                self.isGoingByGame = self.moveUp()
+            if (action == 1):
+                self.nextCoordY = ((self.rect.y)/32)+1
+                self.isGoingByGame = self.moveDown()
+            if (action == 2):
+                self.nextCoordX = ((self.rect.x)/32)+1
+                self.isGoingByGame = self.moveRight()
+            if (action == 3):
+                self.nextCoordX = ((self.rect.x)/32)-1
+                self.isGoingByGame = self.moveLeft()
 
 #клас анімацій (базових їх налаштувань)
 class Animation(object):

@@ -9,8 +9,8 @@ import csv
 
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
-SCREENWIDTH = 672
-SCREENHEIGHT = 640
+SCREENWIDTH = 160
+SCREENHEIGHT = 160
 
 #визначення кольорів для подальшого використання
 BLACK = (0,0,0)
@@ -19,7 +19,7 @@ BLUE = (0,0,255)
 RED = (255,0,0)
 
 #задання початкових координатів для гравця
-startI = 9
+startI = 0
 startJ = 0
 
 #клас самої гри
@@ -51,8 +51,8 @@ class Game(object):
         self.randGhosts = []
         self.followingGhosts = []
         self.enemies = pygame.sprite.Group()
-        self.enemies.add(Slime(256,288, ghostTypes[0]))
-        self.enemies.add(Slime(288,288,ghostTypes[1]))
+        self.enemies.add(Slime(64,64, ghostTypes[1]))
+        # self.enemies.add(Slime(288,288,ghostTypes[1]))
         # self.enemies.add(Slime(320,288,ghostTypes[0]))
         # self.enemies.add(Slime(352,288,ghostTypes[0]))
         # self.enemies.add(Slime(384,288,ghostTypes[0]))
@@ -79,7 +79,7 @@ class Game(object):
         # playerPosition = random.randint(0, len(listOfXY)-1)
         # startI = listOfXY[playerPosition][0] 
         # startJ = listOfXY[playerPosition][1] 
-        self.player = Player(startJ*32,startI*32,"player.png", True)
+        self.player = Player(startJ*32,startI*32,"player.png", False)
         ##визначення випадкової точки для однієї монетки (кінцевої точки шляху)
         # foodPosition = random.randint(0, len(listOfXY)-1)
         # endI = listOfXY[foodPosition][0] 
@@ -113,9 +113,24 @@ class Game(object):
         # print([i[::-1] for i in self.pathGroup[::-1]])
         #print("Time: ", endTime)
         self.algorithm = minOrExpMax.expectimax
-        self.bestNextPosition = self.algorithm(grid,self.player,self.enemies,self.dotsGroup)
+        #self.bestNextPosition = self.algorithm(grid,self.player,self.enemies,self.dotsGroup)
         self.startTimeGame = datetime.now()
 
+    def PlayerNextMove(self, action):
+        self.player.RunToCoords(action)
+        playerXPos,playerYPos =  self.player.GetCordsInMaze()
+        nearestEnemy = minOrExpMax.getNearestFood([playerXPos, playerYPos], self.enemies)
+        nearestFood = minOrExpMax.getNearestFood([playerXPos,playerYPos], self.dotsGroup)
+        #[PlayerXPos, PlayerYPos, GhostXpoz, GhostYpoz, mazeMatrix, FoodCordsList]
+        return [self.ScoreCAlculate(nearestEnemy,nearestFood), playerXPos, playerYPos, nearestEnemy, nearestFood]
+
+    def ScoreCAlculate(self,nearestEnemy,nearestFood):
+        playerXPos, playerYPos = self.player.GetCordsInMaze()
+        playerFoodDistance = heuristic([playerXPos, playerYPos],nearestFood, "es")
+        playerEnemyDistance = heuristic([playerXPos, playerYPos],nearestEnemy, "es")
+        a = self.score
+        self.score = 0
+        return a
 
     def processEvents(self):
         if self.gameOver == True:
@@ -141,18 +156,19 @@ class Game(object):
                     #при натисканні клавіші "ESCAPE" відбувається завершення гри
                     elif event.key == pygame.K_ESCAPE:
                         self.gameOver = True
+                        self.score -= 100
 
             #якщо гравець відпускає клавішу клавіатури відбувається наступне:
-            elif event.type == pygame.KEYUP:
-                #при відпусканні клавіші праворуч, ліворуч, вгору чи вниз припиняється рух гравця у відповідному напрямку
-                if event.key == pygame.K_RIGHT:
-                    self.player.stopMoveRight()
-                elif event.key == pygame.K_LEFT:
-                    self.player.stopMoveLeft()
-                elif event.key == pygame.K_UP:
-                    self.player.stopMoveUp()
-                elif event.key == pygame.K_DOWN:
-                    self.player.stopMoveDown()
+            #elif event.type == pygame.KEYUP:
+            #    #при відпусканні клавіші праворуч, ліворуч, вгору чи вниз припиняється рух гравця у відповідному напрямку
+            #    if event.key == pygame.K_RIGHT:
+            #        self.player.stopMoveRight()
+            #    elif event.key == pygame.K_LEFT:
+            #        self.player.stopMoveLeft()
+            #    elif event.key == pygame.K_UP:
+            #        self.player.stopMoveUp()
+            #    elif event.key == pygame.K_DOWN:
+            #        self.player.stopMoveDown()
         return False
 
     def runLogic(self):
@@ -163,7 +179,7 @@ class Game(object):
             #при кожному зіткненні гравця з їжею відбувається зарахування балу для гравця та зникнення їжі
             dotsHitList = pygame.sprite.spritecollide(self.player,self.dotsGroup,True)
             if len(dotsHitList) > 0:
-                self.score += 1
+                self.score += 25
             #якщо на полі не залишилось їжі, то гру завершено
             if len(self.dotsGroup) == 0:
                 self.status = True

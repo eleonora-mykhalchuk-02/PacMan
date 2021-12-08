@@ -2,8 +2,8 @@ import pygame
 from game import Game
 
 #задаємо розширення екрану в залежності від розмірів ігроового поля
-SCREENWIDTH = 672
-SCREENHEIGHT = 640
+SCREENWIDTH = 160
+SCREENHEIGHT = 160
 
 def main():
     # ініціація всього процесу запуску гри
@@ -23,7 +23,7 @@ def main():
         game.runLogic()
         #створення графіки та самого екрану гри
         game.displayFrame(screen)
-        clock.tick(1000)
+        clock.tick(100)
     #після завершення гравцем гри, відбувається вихід з неї
     pygame.quit()
 
