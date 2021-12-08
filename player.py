@@ -123,16 +123,32 @@ class Player(pygame.sprite.Sprite):
 
     #зміна координатів гравця в залежності від команди
     def moveRight(self):
-        self.changeX = 2
+        if(self.isPossibleToGo(grid, (((self.rect.x) / 32) + 1), (((self.rect.y) / 32)))):
+            self.changeX = 2
+            return True
+        else:
+            return False
 
     def moveLeft(self):
-        self.changeX = -2
+        if (self.isPossibleToGo(grid, (((self.rect.x) / 32) - 1), (((self.rect.y) / 32)))):
+            self.changeX = -2
+            return True
+        else:
+            return False
 
     def moveUp(self):
-        self.changeY = -2
+        if (self.isPossibleToGo(grid, (((self.rect.x) / 32)), (((self.rect.y) / 32)-1))):
+            self.changeY = -2
+            return True
+        else:
+            return False
 
     def moveDown(self):
-        self.changeY = 2
+        if (self.isPossibleToGo(grid, (((self.rect.x) / 32)), (((self.rect.y) / 32) + 1))):
+            self.changeY = 2
+            return True
+        else:
+            return False
     
     #припинення руху гравця на полі
     def stopMoveRight(self):
